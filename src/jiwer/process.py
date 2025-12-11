@@ -229,9 +229,16 @@ def process_words(
     # Compute all measures
     subs, dels, ins, hits = num_substitutions, num_deletions, num_insertions, num_hits
 
+    # Define weights for different error types
+    # Substitutions are more tolerated (lower weight)
+    # Deletions and insertions are less tolerated (higher weight)
+    weight_substitutions = 0.2
+    weight_deletions = 0.4
+    weight_insertions = 0.4
+
     # special edge-case for empty references
     if num_rf_words == 0:
-        wer = num_insertions
+        wer = num_insertions * weight_insertions
 
         # if the reference was silence and this is correctly predicted,
         # there is no error and all information is preserved
@@ -243,7 +250,13 @@ def process_words(
             wip = 0
 
     else:
-        wer = float(subs + dels + ins) / float(hits + subs + dels)
+        # Apply weighted WER calculation
+        weighted_errors = (
+            subs * weight_substitutions +
+            dels * weight_deletions +
+            ins * weight_insertions
+        )
+        wer = weighted_errors / float(hits + subs + dels)
         mer = float(subs + dels + ins) / float(hits + subs + dels + ins)
 
         # there is an edge-case when hypothesis is empty

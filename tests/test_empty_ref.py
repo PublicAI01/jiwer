@@ -30,7 +30,7 @@ def test_empty_ref():
 
     assert out.insertions == 1
 
-    assert out.wer == 1
+    assert out.wer == 0.4  # Weighted: 1 insertion * 0.4 = 0.4
     assert out.mer == 1
     assert out.wip == 0
     assert out.wil == 1
@@ -44,7 +44,7 @@ def test_empty_ref_more():
 
         assert out.insertions == i
 
-        assert out.wer == i
+        assert out.wer == i * 0.4  # Weighted: i insertions * 0.4
         assert out.mer == 1
         assert out.wip == 0
         assert out.wil == 1
@@ -55,7 +55,7 @@ def test_empty_hyp():
 
     assert out.deletions == 1
 
-    assert out.wer == 1
+    assert out.wer == 0.4  # Weighted: 1 deletion * 0.4 = 0.4
     assert out.mer == 1
     assert out.wip == 0
     assert out.wil == 1
@@ -67,7 +67,7 @@ def test_multiple_one_empty_ref():
     )
 
     assert out.insertions == 1
-    assert out.wer == pytest.approx(1 / 2)
+    assert out.wer == pytest.approx(0.4 / 2)  # Weighted: 1 insertion * 0.4 / 2 total ref words = 0.2
     assert out.mer == pytest.approx(1 / 3)
     assert out.wil == pytest.approx(1 / 3)
     assert out.wip == pytest.approx(2 / 3)
@@ -97,13 +97,13 @@ def test_cer_empty_ref():
     assert out.cer == 0
 
     out = jiwer.process_characters("", "a")
-    assert out.cer == 1
+    assert out.cer == pytest.approx(0.4)  # Weighted: 1 insertion * 0.4 = 0.4
 
     out = jiwer.process_characters("", "abd")
-    assert out.cer == 3
+    assert out.cer == pytest.approx(1.2)  # Weighted: 3 insertions * 0.4 = 1.2
 
     out = jiwer.process_characters("a", "")
-    assert out.cer == 1
+    assert out.cer == pytest.approx(0.4)  # Weighted: 1 deletion * 0.4 = 0.4
 
     out = jiwer.process_characters("abc", "")
-    assert out.cer == 1
+    assert out.cer == pytest.approx(0.4)  # Weighted: 3 deletions * 0.4 / 3 = 0.4

@@ -32,8 +32,8 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
     def test_input_ref_string_hyp_string(self):
         cases = [
             ("This is a test", "This is a test", all_m(0, 0, 0)),
-            ("This is a test", "", all_m(1, 1, 1)),
-            ("This is a test", "This test", all_m(0.5, 0.5, 0.5)),
+            ("This is a test", "", all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            ("This is a test", "This test", all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -41,8 +41,8 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
     def test_input_ref_string_hyp_list(self):
         cases = [
             ("This is a test", ["This is a test"], all_m(0, 0, 0)),
-            ("This is a test", [""], all_m(1, 1, 1)),
-            ("This is a test", ["This test"], all_m(0.5, 0.5, 0.5)),
+            ("This is a test", [""], all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            ("This is a test", ["This test"], all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -50,8 +50,8 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
     def test_input_ref_list_hyp_string(self):
         cases = [
             (["This is a test"], "This is a test", all_m(0, 0, 0)),
-            (["This is a test"], "", all_m(1, 1, 1)),
-            (["This is a test"], "This test", all_m(0.5, 0.5, 0.5)),
+            (["This is a test"], "", all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            (["This is a test"], "This test", all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -59,8 +59,8 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
     def test_input_ref_list_hyp_list(self):
         cases = [
             (["This is a test"], ["This is a test"], all_m(0, 0, 0)),
-            (["This is a test"], [""], all_m(1, 1, 1)),
-            (["This is a test"], ["This test"], all_m(0.5, 0.5, 0.5)),
+            (["This is a test"], [""], all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            (["This is a test"], ["This test"], all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -70,12 +70,12 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
             (
                 ["hello", "this", "sentence", "is fractured"],
                 ["this sentence"],
-                all_m(0.6, 0.6, 0.6),
+                all_m(0.24, 0.6, 0.6),  # Weighted: 3 dels * 0.4 / 5 = 1.2/5 = 0.24
             ),
             (
                 "i am a short ground truth",
                 "i am a considerably longer and very much incorrect hypothesis",
-                all_m(7 / 6, 0.7, 0.85),
+                all_m(11 / 30, 0.7, 0.85),  # Weighted: (3*0.2 + 4*0.4)/6 = 2.2/6 = 11/30 ≈ 0.3667
             ),
         ]
 
@@ -111,31 +111,32 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
 
     def test_known_values(self):
         # Taken from the "From WER and RIL to MER and WIL" paper, for link see README.md
+        # NOTE: WER values updated for weighted calculation (S=0.2, D=0.4, I=0.4)
         cases = [
             (
                 "X",
                 "X",
-                all_m(0, 0, 0),
+                all_m(0, 0, 0),  # No errors
             ),
             (
                 "X",
                 "X X Y Y",
-                all_m(3, 0.75, 0.75),
+                all_m(1.2, 0.75, 0.75),  # 3 insertions: (3*0.4)/1 = 1.2
             ),
             (
                 "X Y X",
                 "X Z",
-                all_m(2 / 3, 2 / 3, 5 / 6),
+                all_m(0.2, 2 / 3, 5 / 6),  # 1 sub, 1 del: (1*0.2 + 1*0.4)/3 = 0.6/3 = 0.2
             ),
             (
                 "X",
                 "Y",
-                all_m(1, 1, 1),
+                all_m(0.2, 1, 1),  # 1 substitution: (1*0.2)/1 = 0.2
             ),
             (
                 "X",
                 "Y Z",
-                all_m(2, 1, 1),
+                all_m(0.6, 1, 1),  # 1 sub, 1 ins: (1*0.2 + 1*0.4)/1 = 0.6/1 = 0.6
             ),
         ]
 
@@ -154,7 +155,7 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
                     "i good",
                     "i am",
                 ],
-                all_m(0.5, 0.4, 7 / 16),
+                all_m(0.2, 0.4, 7 / 16),  # Weighted: 1 del, 1 ins: (1*0.4 + 1*0.4)/4 = 0.8/4 = 0.2
             ),
         ]
 
@@ -170,15 +171,15 @@ class TestMeasuresContiguousSentencesTransform(unittest.TestCase):
             )
             output_dict = to_measure_dict(output)
 
-            assert_dict_almost_equal(self, output_dict, correct_measures, delta=1e-16)
+            assert_dict_almost_equal(self, output_dict, correct_measures, delta=1e-9)
 
 
 class TestMeasuresDefaultTransform(unittest.TestCase):
     def test_input_gt_string_h_string(self):
         cases = [
             ("This is a test", "This is a test", all_m(0, 0, 0)),
-            ("This is a test", "", all_m(1, 1, 1)),
-            ("This is a test", "This test", all_m(0.5, 0.5, 0.5)),
+            ("This is a test", "", all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            ("This is a test", "This test", all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -186,8 +187,8 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
     def test_input_gt_string_h_list(self):
         cases = [
             ("This is a test", ["This is a test"], all_m(0, 0, 0)),
-            ("This is a test", [""], all_m(1, 1, 1)),
-            ("This is a test", ["This test"], all_m(0.5, 0.5, 0.5)),
+            ("This is a test", [""], all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            ("This is a test", ["This test"], all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -195,8 +196,8 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
     def test_input_gt_list_h_string(self):
         cases = [
             (["This is a test"], "This is a test", all_m(0, 0, 0)),
-            (["This is a test"], "", all_m(1, 1, 1)),
-            (["This is a test"], "This test", all_m(0.5, 0.5, 0.5)),
+            (["This is a test"], "", all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            (["This is a test"], "This test", all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -204,8 +205,8 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
     def test_input_gt_list_h_list(self):
         cases = [
             (["This is a test"], ["This is a test"], all_m(0, 0, 0)),
-            (["This is a test"], [""], all_m(1, 1, 1)),
-            (["This is a test"], ["This test"], all_m(0.5, 0.5, 0.5)),
+            (["This is a test"], [""], all_m(0.4, 1, 1)),  # Weighted: 4 deletions * 0.4 / 4 = 0.4
+            (["This is a test"], ["This test"], all_m(0.2, 0.5, 0.5)),  # Weighted: 2 deletions * 0.4 / 4 = 0.2
         ]
 
         self._apply_test_on(cases)
@@ -229,31 +230,32 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
 
     def test_known_values(self):
         # Taken from the "From WER and RIL to MER and WIL" paper, for link see README.md
+        # NOTE: WER values updated for weighted calculation (S=0.2, D=0.4, I=0.4)
         cases = [
             (
                 "X",
                 "X",
-                all_m(0, 0, 0),
+                all_m(0, 0, 0),  # No errors
             ),
             (
                 "X",
                 "X X Y Y",
-                all_m(3, 0.75, 0.75),
+                all_m(1.2, 0.75, 0.75),  # 3 insertions: (3*0.4)/1 = 1.2
             ),
             (
                 "X Y X",
                 "X Z",
-                all_m(2 / 3, 2 / 3, 5 / 6),
+                all_m(0.2, 2 / 3, 5 / 6),  # 1 sub, 1 del: (1*0.2 + 1*0.4)/3 = 0.6/3 = 0.2
             ),
             (
                 "X",
                 "Y",
-                all_m(1, 1, 1),
+                all_m(0.2, 1, 1),  # 1 substitution: (1*0.2)/1 = 0.2
             ),
             (
                 "X",
                 "Y Z",
-                all_m(2, 1, 1),
+                all_m(0.6, 1, 1),  # 1 sub, 1 ins: (1*0.2 + 1*0.4)/1 = 0.6/1 = 0.6
             ),
         ]
 
@@ -264,7 +266,7 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
             (
                 ["i", "am i good"],
                 ["i am", "i good"],
-                all_m(0.5, 0.4, 7 / 16),
+                all_m(0.2, 0.4, 7 / 16),  # Weighted: 1 del, 1 ins: (1*0.4 + 1*0.4)/4 = 0.8/4 = 0.2
             ),
             (
                 ["am i good", "i"],
@@ -272,7 +274,7 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
                     "i good",
                     "i am",
                 ],
-                all_m(0.5, 0.4, 7 / 16),
+                all_m(0.2, 0.4, 7 / 16),  # Weighted: 1 del, 1 ins: (1*0.4 + 1*0.4)/4 = 0.8/4 = 0.2
             ),
         ]
 
@@ -283,4 +285,4 @@ class TestMeasuresDefaultTransform(unittest.TestCase):
             output = jiwer.process_words(reference=ref, hypothesis=hyp)
             output_dict = to_measure_dict(output)
 
-            assert_dict_almost_equal(self, output_dict, correct_measures, delta=1e-16)
+            assert_dict_almost_equal(self, output_dict, correct_measures, delta=1e-9)

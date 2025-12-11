@@ -11,7 +11,8 @@ def test_basic_word_mapping():
 
     result = process_words(reference=reference, hypothesis=hypothesis)
     assert isinstance(result.wer, float)
-    assert result.wer == 0.5  # 50% of words are different
+    # Weighted: 50 substitutions * 0.2 / 100 = 0.1
+    assert result.wer == 0.1  # 50 substitutions with 0.2 weight
     assert result.hits == 50  # 50 "same" matches
 
 
@@ -27,7 +28,8 @@ def test_vocabulary_size_limit():
     try:
         result = process_words(reference=reference, hypothesis=hypothesis)
         assert isinstance(result.wer, float)
-        assert result.wer == 1.0  # All words are different
+        # All words are different (substitutions), weighted: N*0.2/N = 0.2
+        assert result.wer == 0.2  # All substitutions with 0.2 weight
     except Exception as e:
         pytest.fail(f"Large vocabulary processing failed: {e}")
 
@@ -60,7 +62,8 @@ def test_wer_large_vocabulary():
     try:
         error_rate = wer(reference=reference, hypothesis=hypothesis)
         assert isinstance(error_rate, float)
-        assert error_rate == 1.0  # All words are different
+        # All words are different (substitutions), weighted: N*0.2/N = 0.2
+        assert error_rate == 0.2  # All substitutions with 0.2 weight
     except Exception as e:
         pytest.fail(f"WER calculation failed with large vocabulary: {e}")
 

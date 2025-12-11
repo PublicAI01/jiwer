@@ -73,7 +73,7 @@ substitutions=3 deletions=5 insertions=0 hits=1
 mer=88.89%
 wil=97.22%
 wip=2.78%
-wer=88.89%
+wer=28.89%
 """
         alignment = jiwer.visualize_alignment(
             jiwer.process_words(
@@ -253,7 +253,7 @@ class TestAlignmentVisualizationCharacters(unittest.TestCase):
             "number of sentences: 1\n"
             "substitutions=4 deletions=29 insertions=0 hits=10\n"
             "\n"
-            "cer=76.74%\n"
+            "cer=28.84%\n"
         )
         alignment = jiwer.visualize_alignment(
             jiwer.process_characters(
